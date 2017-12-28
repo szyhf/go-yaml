@@ -2,13 +2,14 @@ package yaml_test
 
 import (
 	"errors"
-	. "gopkg.in/check.v1"
-	"gopkg.in/yaml.v2"
 	"math"
 	"net"
 	"reflect"
 	"strings"
 	"time"
+
+	"github.com/szyhf/go-yaml"
+	. "gopkg.in/check.v1"
 )
 
 var unmarshalIntTest = 123
@@ -207,37 +208,37 @@ var unmarshalTests = []struct {
 
 	// Structs and type conversions.
 	{
-		"hello: world",
+		"Hello: world",
 		&struct{ Hello string }{"world"},
 	}, {
-		"a: {b: c}",
+		"A: {B: c}",
 		&struct{ A struct{ B string } }{struct{ B string }{"c"}},
 	}, {
-		"a: {b: c}",
+		"A: {B: c}",
 		&struct{ A *struct{ B string } }{&struct{ B string }{"c"}},
 	}, {
-		"a: {b: c}",
+		"A: {b: c}",
 		&struct{ A map[string]string }{map[string]string{"b": "c"}},
 	}, {
-		"a: {b: c}",
+		"A: {b: c}",
 		&struct{ A *map[string]string }{&map[string]string{"b": "c"}},
 	}, {
-		"a:",
+		"A:",
 		&struct{ A map[string]string }{},
 	}, {
-		"a: 1",
+		"A: 1",
 		&struct{ A int }{1},
 	}, {
-		"a: 1",
+		"A: 1",
 		&struct{ A float64 }{1},
 	}, {
-		"a: 1.0",
+		"A: 1.0",
 		&struct{ A int }{1},
 	}, {
-		"a: 1.0",
+		"A: 1.0",
 		&struct{ A uint }{1},
 	}, {
-		"a: [1, 2]",
+		"A: [1, 2]",
 		&struct{ A []int }{[]int{1, 2}},
 	}, {
 		"a: 1",
@@ -248,7 +249,7 @@ var unmarshalTests = []struct {
 			B int "a"
 		}{1},
 	}, {
-		"a: y",
+		"A: y",
 		&struct{ A bool }{true},
 	},
 
@@ -413,20 +414,20 @@ var unmarshalTests = []struct {
 
 	// Anchors and aliases.
 	{
-		"a: &x 1\nb: &y 2\nc: *x\nd: *y\n",
+		"A: &x 1\nB: &y 2\nC: *x\nD: *y\n",
 		&struct{ A, B, C, D int }{1, 2, 1, 2},
 	}, {
-		"a: &a {c: 1}\nb: *a",
+		"A: &a {C: 1}\nB: *a",
 		&struct {
 			A, B struct {
 				C int
 			}
 		}{struct{ C int }{1}, struct{ C int }{1}},
 	}, {
-		"a: &a [1, 2]\nb: *a",
+		"a: &a [1, 2]\nB: *a",
 		&struct{ B []int }{[]int{1, 2}},
 	}, {
-		"b: *a\na: &a {c: 1}",
+		"A: *a\nB: &a {C: 1}",
 		&struct {
 			A, B struct {
 				C int
@@ -463,7 +464,7 @@ var unmarshalTests = []struct {
 
 	// Ignored field
 	{
-		"a: 1\nb: 2\n",
+		"A: 1\nB: 2\n",
 		&struct {
 			A int
 			B int "-"
@@ -487,7 +488,7 @@ var unmarshalTests = []struct {
 
 	// Struct inlining
 	{
-		"a: 1\nb: 2\nc: 3\n",
+		"A: 1\nB: 2\nC: 3\n",
 		&struct {
 			A int
 			C inlineB `yaml:",inline"`
@@ -496,11 +497,11 @@ var unmarshalTests = []struct {
 
 	// Map inlining
 	{
-		"a: 1\nb: 2\nc: 3\n",
+		"A: 1\nb: 2\nC: 3\n",
 		&struct {
 			A int
 			C map[string]int `yaml:",inline"`
-		}{1, map[string]int{"b": 2, "c": 3}},
+		}{1, map[string]int{"b": 2, "C": 3}},
 	},
 
 	// bug 1243827
@@ -555,7 +556,7 @@ var unmarshalTests = []struct {
 
 	// Issue #39.
 	{
-		"a:\n b:\n  c: d\n",
+		"a:\n B:\n  c: d\n",
 		map[string]struct{ B interface{} }{"a": {map[interface{}]interface{}{"c": "d"}}},
 	},
 
@@ -577,7 +578,7 @@ var unmarshalTests = []struct {
 
 	// Encode empty lists as zero-length slices.
 	{
-		"a: []",
+		"A: []",
 		&struct{ A []int }{[]int{}},
 	},
 
@@ -768,7 +769,7 @@ func (s *S) TestUnmarshalerTypeError(c *C) {
 		M      map[string]*unmarshalerType
 	}
 	var v T
-	data := `{before: A, m: {abc: 1, def: 2, ghi: 3, jkl: 4}, after: B}`
+	data := `{Before: A, M: {abc: 1, def: 2, ghi: 3, jkl: 4}, After: B}`
 	err := yaml.Unmarshal([]byte(data), &v)
 	c.Assert(err, ErrorMatches, ""+
 		"yaml: unmarshal errors:\n"+
@@ -813,7 +814,7 @@ func (s *S) TestUnmarshalerTypeErrorProxying(c *C) {
 		M      map[string]*proxyTypeError
 	}
 	var v T
-	data := `{before: A, m: {abc: a, def: b}, after: B}`
+	data := `{Before: A, M: {abc: a, def: b}, After: B}`
 	err := yaml.Unmarshal([]byte(data), &v)
 	c.Assert(err, ErrorMatches, ""+
 		"yaml: unmarshal errors:\n"+
@@ -871,64 +872,64 @@ func (s *S) TestUnmarshalerRetry(c *C) {
 var mergeTests = `
 anchors:
   list:
-    - &CENTER { "x": 1, "y": 2 }
-    - &LEFT   { "x": 0, "y": 2 }
-    - &BIG    { "r": 10 }
-    - &SMALL  { "r": 1 }
+    - &CENTER { "X": 1, "Y": 2 }
+    - &LEFT   { "X": 0, "Y": 2 }
+    - &BIG    { "R": 10 }
+    - &SMALL  { "R": 1 }
 
 # All the following maps are equal:
 
 plain:
   # Explicit keys
-  "x": 1
-  "y": 2
-  "r": 10
-  label: center/big
+  "X": 1
+  "Y": 2
+  "R": 10
+  Label: center/big
 
 mergeOne:
   # Merge one map
   << : *CENTER
-  "r": 10
-  label: center/big
+  "R": 10
+  Label: center/big
 
 mergeMultiple:
   # Merge multiple maps
   << : [ *CENTER, *BIG ]
-  label: center/big
+  Label: center/big
 
 override:
   # Override
   << : [ *BIG, *LEFT, *SMALL ]
-  "x": 1
-  label: center/big
+  "X": 1
+  Label: center/big
 
 shortTag:
   # Explicit short merge tag
   !!merge "<<" : [ *CENTER, *BIG ]
-  label: center/big
+  Label: center/big
 
 longTag:
   # Explicit merge long tag
   !<tag:yaml.org,2002:merge> "<<" : [ *CENTER, *BIG ]
-  label: center/big
+  Label: center/big
 
 inlineMap:
-  # Inlined map 
-  << : {"x": 1, "y": 2, "r": 10}
-  label: center/big
+  # Inlined map
+  << : {"X": 1, "Y": 2, "R": 10}
+  Label: center/big
 
 inlineSequenceMap:
   # Inlined map in sequence
-  << : [ *CENTER, {"r": 10} ]
-  label: center/big
+  << : [ *CENTER, {"R": 10} ]
+  Label: center/big
 `
 
 func (s *S) TestMerge(c *C) {
 	var want = map[interface{}]interface{}{
-		"x":     1,
-		"y":     2,
-		"r":     10,
-		"label": "center/big",
+		"X":     1,
+		"Y":     2,
+		"R":     10,
+		"Label": "center/big",
 	}
 
 	var m map[interface{}]interface{}
@@ -987,19 +988,19 @@ func (s *S) TestUnmarshalNull(c *C) {
 func (s *S) TestUnmarshalSliceOnPreset(c *C) {
 	// Issue #48.
 	v := struct{ A []int }{[]int{1}}
-	yaml.Unmarshal([]byte("a: [2]"), &v)
+	yaml.Unmarshal([]byte("A: [2]"), &v)
 	c.Assert(v.A, DeepEquals, []int{2})
 }
 
 func (s *S) TestUnmarshalStrict(c *C) {
 	v := struct{ A, B int }{}
 
-	err := yaml.UnmarshalStrict([]byte("a: 1\nb: 2"), &v)
+	err := yaml.UnmarshalStrict([]byte("A: 1\nB: 2"), &v)
 	c.Check(err, IsNil)
-	err = yaml.Unmarshal([]byte("a: 1\nb: 2\nc: 3"), &v)
+	err = yaml.Unmarshal([]byte("A: 1\nB: 2\nc: 3"), &v)
 	c.Check(err, IsNil)
-	err = yaml.UnmarshalStrict([]byte("a: 1\nb: 2\nc: 3"), &v)
-	c.Check(err, ErrorMatches, "yaml: unmarshal errors:\n  line 1: field c not found in struct struct { A int; B int }")
+	err = yaml.UnmarshalStrict([]byte("A: 1\nB: 2\nC: 3"), &v)
+	c.Check(err, ErrorMatches, "yaml: unmarshal errors:\n  line 1: field C not found in struct struct { A int; B int }")
 }
 
 //var data []byte

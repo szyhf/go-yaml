@@ -7,10 +7,11 @@ import (
 	"strings"
 	"time"
 
-	. "gopkg.in/check.v1"
-	"gopkg.in/yaml.v2"
 	"net"
 	"os"
+
+	"github.com/szyhf/go-yaml"
+	. "gopkg.in/check.v1"
 )
 
 var marshalIntTest = 123
@@ -114,34 +115,34 @@ var marshalTests = []struct {
 	// Structures
 	{
 		&struct{ Hello string }{"world"},
-		"hello: world\n",
+		"Hello: world\n",
 	}, {
 		&struct {
 			A struct {
 				B string
 			}
 		}{struct{ B string }{"c"}},
-		"a:\n  b: c\n",
+		"A:\n  B: c\n",
 	}, {
 		&struct {
 			A *struct {
 				B string
 			}
 		}{&struct{ B string }{"c"}},
-		"a:\n  b: c\n",
+		"A:\n  B: c\n",
 	}, {
 		&struct {
 			A *struct {
 				B string
 			}
 		}{},
-		"a: null\n",
+		"A: null\n",
 	}, {
 		&struct{ A int }{1},
-		"a: 1\n",
+		"A: 1\n",
 	}, {
 		&struct{ A []int }{[]int{1, 2}},
-		"a:\n- 1\n- 2\n",
+		"A:\n- 1\n- 2\n",
 	}, {
 		&struct {
 			B int "a"
@@ -149,7 +150,7 @@ var marshalTests = []struct {
 		"a: 1\n",
 	}, {
 		&struct{ A bool }{true},
-		"a: true\n",
+		"A: true\n",
 	},
 
 	// Conditional flag
@@ -169,7 +170,7 @@ var marshalTests = []struct {
 		&struct {
 			A *struct{ X, y int } "a,omitempty,flow"
 		}{&struct{ X, y int }{1, 2}},
-		"a: {x: 1}\n",
+		"a: {X: 1}\n",
 	}, {
 		&struct {
 			A *struct{ X, y int } "a,omitempty,flow"
@@ -179,12 +180,12 @@ var marshalTests = []struct {
 		&struct {
 			A *struct{ X, y int } "a,omitempty,flow"
 		}{&struct{ X, y int }{}},
-		"a: {x: 0}\n",
+		"a: {X: 0}\n",
 	}, {
 		&struct {
 			A struct{ X, y int } "a,omitempty,flow"
 		}{struct{ X, y int }{1, 2}},
-		"a: {x: 1}\n",
+		"a: {X: 1}\n",
 	}, {
 		&struct {
 			A struct{ X, y int } "a,omitempty,flow"
@@ -215,7 +216,7 @@ var marshalTests = []struct {
 				B, D string
 			} "a,flow"
 		}{struct{ B, D string }{"c", "e"}},
-		"a: {b: c, d: e}\n",
+		"a: {B: c, D: e}\n",
 	},
 
 	// Unexported field
@@ -224,7 +225,7 @@ var marshalTests = []struct {
 			u int
 			A int
 		}{0, 1},
-		"a: 1\n",
+		"A: 1\n",
 	},
 
 	// Ignored field
@@ -233,7 +234,7 @@ var marshalTests = []struct {
 			A int
 			B int "-"
 		}{1, 2},
-		"a: 1\n",
+		"A: 1\n",
 	},
 
 	// Struct inlining
@@ -242,7 +243,7 @@ var marshalTests = []struct {
 			A int
 			C inlineB `yaml:",inline"`
 		}{1, inlineB{2, inlineC{3}}},
-		"a: 1\nb: 2\nc: 3\n",
+		"A: 1\nB: 2\nC: 3\n",
 	},
 
 	// Map inlining
@@ -251,7 +252,7 @@ var marshalTests = []struct {
 			A int
 			C map[string]int `yaml:",inline"`
 		}{1, map[string]int{"b": 2, "c": 3}},
-		"a: 1\nb: 2\nc: 3\n",
+		"A: 1\nb: 2\nc: 3\n",
 	},
 
 	// Duration
@@ -343,13 +344,13 @@ var marshalErrorTests = []struct {
 		B       int
 		inlineB ",inline"
 	}{1, inlineB{2, inlineC{3}}},
-	panic: `Duplicated key 'b' in struct struct \{ B int; .*`,
+	panic: `Duplicated key 'B' in struct struct \{ B int; .*`,
 }, {
 	value: &struct {
 		A int
 		B map[string]int ",inline"
-	}{1, map[string]int{"a": 2}},
-	panic: `Can't have key "a" in inlined map; conflicts with struct field`,
+	}{1, map[string]int{"A": 2}},
+	panic: `Can't have key "A" in inlined map; conflicts with struct field`,
 }}
 
 func (s *S) TestMarshalErrors(c *C) {
@@ -376,7 +377,7 @@ func (s *S) TestMarshalTypeCache(c *C) {
 		data, err = yaml.Marshal(&T{})
 		c.Assert(err, IsNil)
 	}()
-	c.Assert(string(data), Equals, "b: 0\n")
+	c.Assert(string(data), Equals, "B: 0\n")
 }
 
 var marshalerTests = []struct {

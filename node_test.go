@@ -18,12 +18,12 @@ package yaml_test
 import (
 	"bytes"
 	"fmt"
-	"os"
-
-	. "gopkg.in/check.v1"
-	"gopkg.in/yaml.v3"
 	"io"
+	"os"
 	"strings"
+
+	"github.com/szyhf/go-yaml"
+	. "gopkg.in/check.v1"
 )
 
 var nodeTests = []struct {

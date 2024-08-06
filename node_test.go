@@ -20,10 +20,11 @@ import (
 	"fmt"
 	"os"
 
-	. "gopkg.in/check.v1"
-	"gopkg.in/yaml.v3"
 	"io"
 	"strings"
+
+	yaml "github.com/szyhf/go-yaml"
+	. "gopkg.in/check.v1"
 )
 
 var nodeTests = []struct {
